@@ -1,41 +1,36 @@
-// edwin leonel baltan carabali lio
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <malloc.h>
-#include <limits>
+#include <malloc.h> // Para malloc 
 
-// Estructura para representar una pelicula en el Arbol Binario de busqueda
+//Estructura para representar una pelicula en el arbol Binario de Busqueda
 struct Pelicula {
-    std::string nombre;      // Nombre de la pelicula
-    int anio;               // Ano de estreno
-    std::string genero;     // Genero de la pelicula
-    float recaudacion;      // Recaudacion en millones de dolares
-    Pelicula* izq;          // Puntero al hijo izquierdo
-    Pelicula* der;          // Puntero al hijo derecho
+    std::string nombre;  // Nombre de la pelicula
+    int anio;            // Año de realizacion
+    std::string genero;  // Genero de la pelicula
+    float recaudacion;   // Dinero recaudado en millones de dolares
+    Pelicula* izq;       // Puntero al hijo izquierdo
+    Pelicula* der;       // Puntero al hijo derecho
 
-    // Constructor para inicializar una pelicula
     Pelicula(std::string nombre, int anio, std::string genero, float recaudacion)
         : nombre(nombre), anio(anio), genero(genero), recaudacion(recaudacion), izq(NULL), der(NULL) {}
 };
 
-//Clase para gestionar un arbol Binario de Busqueda de peliculas
+// Clase para manejar el arbol Binario de Busqueda
 class ArbolPeliculas {
 private:
-    Pelicula* raiz; //Raiz del arbol
+    Pelicula* raiz;
 
-    //Inserta una pelicula recursivamente, ordenando por año
+    // Funcion para insertar una pelicula
     Pelicula* insertar(Pelicula* nodo, std::string nombre, int anio, std::string genero, float recaudacion) {
-        //Caso base: crear un nuevo nodo si el subarbol esta vacio
         if (nodo == NULL) {
             Pelicula* nuevo = (Pelicula*)malloc(sizeof(Pelicula));
             if (nuevo == NULL) {
-                std::cerr << "Error: No se pudo asignar ." << std::endl;
-                return NULL;  
+                std::cerr << "Error: No se pudo asignar." << std::endl;
+                exit(1); 
             }
-            // Inicializar manualmente los campos
+            // Inicializacion manual 
             nuevo->nombre = nombre;
             nuevo->anio = anio;
             nuevo->genero = genero;
@@ -44,18 +39,15 @@ private:
             nuevo->der = NULL;
             return nuevo;
         }
-        //Insertar en el subrbol izquierdo si el año es menor o igual
-        if (anio <= nodo->anio) {
+        if (anio <= nodo->anio) { // Si el año es menor o igual, va a la izquierda
             nodo->izq = insertar(nodo->izq, nombre, anio, genero, recaudacion);
-        } 
-        // Insertar en el sub arbol derecho si el año es mayor
-        else {
+        } else { // Si el año es mayor, va a la derecha
             nodo->der = insertar(nodo->der, nombre, anio, genero, recaudacion);
         }
         return nodo;
     }
 
-    // Recorre el arbol en inorden (izquierda, raiz, derecha)
+    // Funcio para recorrer el arbol en inorden
     void inOrden(Pelicula* nodo) const {
         if (nodo != NULL) {
             inOrden(nodo->izq);
@@ -65,7 +57,7 @@ private:
         }
     }
 
-    //Recorre el arbol en preorden (raiz, izquierda, derecha)
+    // Funcion para recorrer el arbol en preorden
     void preOrden(Pelicula* nodo) const {
         if (nodo != NULL) {
             std::cout << "Pelicula: " << nodo->nombre << ", Ano: " << nodo->anio
@@ -75,7 +67,7 @@ private:
         }
     }
 
-    // Recorre el arbol en postorden (izquierda, derecha, raiz)
+    // Funcion para recorrer el arbol en postorden
     void postOrden(Pelicula* nodo) const {
         if (nodo != NULL) {
             postOrden(nodo->izq);
@@ -85,7 +77,7 @@ private:
         }
     }
 
-    //Busca una pelicula por nombre en el arbol
+    // Funcion para buscar una pelicula por nombre
     Pelicula* buscarPorNombre(Pelicula* nodo, std::string nombre) const {
         if (nodo == NULL) {
             return NULL;
@@ -93,16 +85,14 @@ private:
         if (nodo->nombre == nombre) {
             return nodo;
         }
-        // Buscar en el subarbol izquierdo
         Pelicula* encontrada = buscarPorNombre(nodo->izq, nombre);
         if (encontrada != NULL) {
             return encontrada;
         }
-        // Buscar en el sub arbol derecho
         return buscarPorNombre(nodo->der, nombre);
     }
 
-    //Muestra todas las peliculas de un genero especifico
+    // Funcion para mostrar todas las peliculas de un genero
     void mostrarPorGenero(Pelicula* nodo, std::string genero) const {
         if (nodo != NULL) {
             mostrarPorGenero(nodo->izq, genero);
@@ -114,7 +104,7 @@ private:
         }
     }
 
-    //Recolecta todas las peliculas en un vector para ordenarlas
+    // Funcion para recolectar todas las peliculas en un vector
     void recolectarPeliculas(Pelicula* nodo, std::vector<Pelicula*>& peliculas) const {
         if (nodo != NULL) {
             recolectarPeliculas(nodo->izq, peliculas);
@@ -123,130 +113,27 @@ private:
         }
     }
 
-    //Busca una pelicula por nombre y devuelve su nodo y el nodo padre
-    Pelicula* buscarConPadrePorNombre(Pelicula* nodo, std::string nombre, Pelicula** padre) const {
-        *padre = NULL;
-        Pelicula* actual = nodo;
-        while (actual != NULL) {
-            if (actual->nombre == nombre) {
-                return actual;
-            }
-            *padre = actual;
-            // Buscar en el subarbol izquierdo
-            Pelicula* encontrada = buscarPorNombre(actual->izq, nombre);
-            if (encontrada != NULL) {
-                return encontrada;
-            }
-            // Continuar en el subrbol derecho
-            actual = actual->der;
-        }
-        return NULL;
-    }
-
-    // Encuentra el nodo con el año minimo en un subarbol sucesor para eliminacion
-    Pelicula* encontrarMinimo(Pelicula* nodo, Pelicula** padreMin) const {
-        *padreMin = NULL;
-        while (nodo->izq != NULL) {
-            *padreMin = nodo;
-            nodo = nodo->izq;
-        }
-        return nodo;
-    }
-
-    // Elimina una pelicula por nombre, manejando todos los casos
-    Pelicula* eliminar(Pelicula* nodo, std::string nombre, bool& eliminado) {
-        if (nodo == NULL) {
-            eliminado = false;
-            return nodo;
-        }
-
-        // Buscar el nodo a eliminar y su padre
-        Pelicula* padre = NULL;
-        Pelicula* objetivo = buscarConPadrePorNombre(nodo, nombre, &padre);
-        if (objetivo == NULL) {
-            eliminado = false;
-            return nodo;
-        }
-
-        // Determinar el hijo o NULL si es hoja
-        Pelicula* hijo = (objetivo->izq != NULL) ? objetivo->izq : objetivo->der;
-
-        // Caso: Nodo con dos hijos
-        if (objetivo->izq != NULL && objetivo->der != NULL) {
-            Pelicula* padreSucesor = NULL;
-            Pelicula* sucesor = encontrarMinimo(objetivo->der, &padreSucesor);
-            //Copia los datos del sucesor al nodo objetivo
-            objetivo->nombre = sucesor->nombre;
-            objetivo->anio = sucesor->anio;
-            objetivo->genero = sucesor->genero;
-            objetivo->recaudacion = sucesor->recaudacion;
-
-            // Ajustar punteros para eliminar el sucesor
-            if (padreSucesor == NULL) {
-                objetivo->der = sucesor->der;
-            } else {
-                padreSucesor->izq = sucesor->der;
-            }
-            // Liberar memoria del sucesor
-            sucesor->~Pelicula();
-            free(sucesor);
-            eliminado = true;
-            return nodo;
-        }
- 
-        // Ajustar el puntero del padre o raiz si es el nodo raiz
-        if (padre == NULL) {
-            raiz = hijo;
-        } else if (padre->izq == objetivo) {
-            padre->izq = hijo;
-        } else {
-            padre->der = hijo;
-        }
-
-        // Liberar memoria del nodo objetivo
-        objetivo->~Pelicula();
-        free(objetivo);
-        eliminado = true;
-        return nodo;
-    }
-
-    //Libera toda la memoria del arbol recursivamente
+    // Funcion para liberar la memoria del arbol
     void liberarArbol(Pelicula* nodo) {
         if (nodo != NULL) {
             liberarArbol(nodo->izq);
             liberarArbol(nodo->der);
-            nodo->~Pelicula();
-            free(nodo);
+            nodo->~Pelicula(); 
+            free(nodo); // Liberar memoria
         }
     }
 
 public:
-    // Constructor: inicializa el arbol vacio
     ArbolPeliculas() : raiz(NULL) {}
 
-    // Destructor: libera toda la memoria del arbol
     ~ArbolPeliculas() {
         liberarArbol(raiz);
     }
 
-    // Inserta una nueva pelicula, verificar que el nombre no exista
     void insertar(std::string nombre, int anio, std::string genero, float recaudacion) {
-        // Verificar si el nombre ya existe
-        if (buscarPorNombre(raiz, nombre) != NULL) {
-            std::cout << "Error: La pelicula '" << nombre << "' ya existe en el arbol.\n";
-            return;
-        }
-        //Insertar la pelicula si el nombre es unico
-        Pelicula* nuevoNodo = insertar(raiz, nombre, anio, genero, recaudacion);
-        if (nuevoNodo == NULL) {
-            std::cout << "Error al insertar la pelicula:\n";
-            return;
-        }
-        raiz = nuevoNodo;
-        std::cout << "Pelicula agregada exitosamente.\n";
+        raiz = insertar(raiz, nombre, anio, genero, recaudacion);
     }
 
-    //Muestra el arbol en recorrido inorden
     void inOrden() const {
         if (raiz == NULL) {
             std::cout << "El arbol esta vacio.\n";
@@ -256,7 +143,6 @@ public:
         }
     }
 
-    // Muestra el arbol en recorrido preorden
     void preOrden() const {
         if (raiz == NULL) {
             std::cout << "El arbol esta vacio.\n";
@@ -266,7 +152,6 @@ public:
         }
     }
 
-    //Muestra el arbol en recorrido postorden
     void postOrden() const {
         if (raiz == NULL) {
             std::cout << "El arbol esta vacio.\n";
@@ -276,7 +161,6 @@ public:
         }
     }
 
-    // Busca una pelicula por nombre y muestra sus detalles
     void buscarPorNombre(std::string nombre) const {
         Pelicula* encontrada = buscarPorNombre(raiz, nombre);
         if (encontrada != NULL) {
@@ -287,13 +171,11 @@ public:
         }
     }
 
-    // Muestra todas las peliculas de un genero
     void mostrarPorGenero(std::string genero) const {
         std::cout << "\nPeliculas del genero " << genero << ":\n";
         mostrarPorGenero(raiz, genero);
     }
 
-    // Muestra las tres peliculas con menor recaudacion
     void mostrarFracasos() const {
         std::vector<Pelicula*> peliculas;
         recolectarPeliculas(raiz, peliculas);
@@ -301,7 +183,6 @@ public:
             std::cout << "No hay peliculas en el arbol.\n";
             return;
         }
-        // Ordenar por recaudacion ascendente
         std::sort(peliculas.begin(), peliculas.end(), 
                   [](const Pelicula* a, const Pelicula* b) { return a->recaudacion < b->recaudacion; });
         std::cout << "\nLos 3 fracasos taquilleros:\n";
@@ -310,26 +191,14 @@ public:
                       << ", Genero: " << peliculas[i]->genero << ", Recaudacion: " << peliculas[i]->recaudacion << "M\n";
         }
     }
-
-    //Elimina una pelicula por nombre
-    void eliminarPorNombre(std::string nombre) {
-        bool eliminado = false;
-        raiz = eliminar(raiz, nombre, eliminado);
-        if (eliminado) {
-            std::cout << "Pelicula '" << nombre << "' eliminada exitosamente.\n";
-        } else {
-            std::cout << "Pelicula '" << nombre << "' no encontrada.\n";
-        }
-    }
 };
 
-// Limpia el buffer de entrada para evitar problemas
+// Funcion para limpiar el buffer de entrada
 void limpiarBuffer() {
-    std::cin.clear(); // Limpia el estado de error
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-// Programa principal con menu
+// Funcion principal con menu
 int main() {
     ArbolPeliculas arbol;
     int opcion;
@@ -339,8 +208,7 @@ int main() {
     float recaudacion;
 
     do {
-        // Mostrar menu
-        std::cout << "\n=== Gestion de Peliculas (Arbol Binario de Busqueda) ===\n";
+        std::cout << "\n=== Gestion de Peliculas Arboles Binario Busqueda ===\n";
         std::cout << "1. Agregar una pelicula\n";
         std::cout << "2. Mostrar recorrido inorden\n";
         std::cout << "3. Mostrar recorrido preorden\n";
@@ -348,18 +216,13 @@ int main() {
         std::cout << "5. Buscar pelicula por nombre\n";
         std::cout << "6. Mostrar peliculas por genero\n";
         std::cout << "7. Mostrar los 3 fracasos taquilleros\n";
-        std::cout << "8. Eliminar pelicula por nombre\n";
-        std::cout << "9. Salir\n";
+        std::cout << "8. Salir\n";
         std::cout << "Seleccione una opcion: ";
-
-        // Validar entrada numerica
-        std::cin >> opcion;
-        if (std::cin.fail()) {
-            std::cout << "Entrada invalida. Ingrese un numero.\n";
+        while (!(std::cin >> opcion)) {
+            std::cout << "Entrada invalida. Ingrese un numero: ";
             limpiarBuffer();
-            continue; // Volver a mostrar el menu
         }
-        limpiarBuffer(); // Limpiar buffer despues de leer el numero
+        limpiarBuffer();
 
         switch (opcion) {
             case 1: // Agregar una pelicula
@@ -371,11 +234,9 @@ int main() {
                 }
 
                 std::cout << "Ingrese el ano de realizacion: ";
-                std::cin >> anio;
-                if (std::cin.fail() || anio < 1700 || anio > 2025) {
-                    std::cout << "Ano invalido (debe estar entre 1700 y 2025).\n";
+                while (!(std::cin >> anio) || anio < 1700 || anio > 2025) {
+                    std::cout << "Ano invalido (debe estar entre 170 y 2025). Intente de nuevo: ";
                     limpiarBuffer();
-                    break;
                 }
                 limpiarBuffer();
 
@@ -386,17 +247,15 @@ int main() {
                     break;
                 }
 
-                std::cout << "Ingrese la recaudacion en millones de dolares: ";
-                std::cin >> recaudacion;
-                if (std::cin.fail() || recaudacion < 0) {
-                    std::cout << "Recaudacion invalida debe ser >= 0.\n";
+                std::cout << "Ingrese la recaudacion (en millones de dolares): ";
+                while (!(std::cin >> recaudacion) || recaudacion < 0) {
+                    std::cout << "Recaudacion invalida (debe ser >= 0). Intente de nuevo: ";
                     limpiarBuffer();
-                    break;
                 }
                 limpiarBuffer();
 
-                // Insertar la pelicula verifica duplicados internamente
                 arbol.insertar(nombre, anio, genero, recaudacion);
+                std::cout << "Pelicula agregada exitosamente.\n";
                 break;
 
             case 2: // Recorrido inorden
@@ -423,26 +282,18 @@ int main() {
                 arbol.mostrarPorGenero(genero);
                 break;
 
-            case 7: //Mostrar los 3 fracasos taquilleros
+            case 7: // Mostrar los 3 fracasos taquilleros
                 arbol.mostrarFracasos();
                 break;
 
-            case 8: // Eliminar pelcula por nombre
-                std::cout << "Ingrese el nombre de la pelicula a eliminar: ";
-                std::getline(std::cin, nombre);
-                arbol.eliminarPorNombre(nombre);
-                break;
-
-            case 9: // Salir
+            case 8: // Salir
                 std::cout << "Saliendo del programa...\n";
-                std::cout << "Presione Enter para continuar...\n";
-                std::cin.get(); // Pausar
                 break;
 
             default:
                 std::cout << "Opcion invalida. Intente de nuevo.\n";
         }
-    } while (opcion != 9);
+    } while (opcion != 8);
 
     return 0;
 }
